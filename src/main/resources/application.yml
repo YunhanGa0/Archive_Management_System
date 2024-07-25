@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://172.25.67.174:3306/gyh_test?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=UTF-8
+    username: gyh
+    password: Gyh@gyh123,
+  jpa:
+    database: MySQL
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: true
+    hibernate:
+      ddl-auto: update

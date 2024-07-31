@@ -3,8 +3,6 @@ import jakarta.persistence.*;
 import lombok.*;
 //@Entity注解标识了User类是一个持久化的实体
 //@Data和@NoArgsConstructor是Lombok中的注解。用来自动生成各参数的Set、Get函数以及不带参数的构造函数。
-//如果您对Lombok还不了解，可以看看这篇文章：
-//[Java开发神器Lombok的使用与原理](https://www.jianshu.com/p/422f151fccd3)
 @Entity
 @Table(name = "archive_management")
 @Data
@@ -13,7 +11,7 @@ import lombok.*;
 public class Archive {
     //@Id和@GeneratedValue用来标识User对应对应数据库表中的主键
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
     private Integer code;
     private String name;
     private Integer parentCode;

@@ -3,9 +3,14 @@ package com.example.Project2.controller;
 import com.example.Project2.bean.Archive;
 import com.example.Project2.dao.ArchiveRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Pageable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -16,8 +21,15 @@ public class archiveController {
      *查询所有列表
      */
     @GetMapping(value = "/archives")
-    public List<Archive> findlist(){
-        return archiveRepository.findAll();
+    public Map<String, Object> findlist(@RequestParam int page, @RequestParam int size) {
+        Pageable pageable = (Pageable) PageRequest.of(page - 1, size); // PageRequest 的页码从 0 开始
+        Page<Archive> archivePage = archiveRepository.findAll((org.springframework.data.domain.Pageable) pageable);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("records", archivePage.getContent());
+        response.put("total", archivePage.getTotalElements());
+
+        return response;
     }
     /**
      *code查询一条数据
@@ -46,10 +58,16 @@ public class archiveController {
      */
     @PutMapping(value= "/archives/{code}")
     public Archive update(@PathVariable("code") Integer code,
-                       @RequestParam(value = "name") String name){
+                          @RequestParam(value = "name") String name,
+                          @RequestParam(value = "special_archivist") String special_archivist,
+                          @RequestParam(value = "administrative_archivist") String administrative_archivist,
+                          @RequestParam(value = "manager") String manager){
         Archive archive = new Archive();
         archive.setCode(code);
         archive.setName(name);
+        archive.setSpecial_archivist(special_archivist);
+        archive.setSpecial_archivist(administrative_archivist);
+        archive.setManager(manager);
         System.out.println(code+name);
         return archiveRepository.save(archive);
     }

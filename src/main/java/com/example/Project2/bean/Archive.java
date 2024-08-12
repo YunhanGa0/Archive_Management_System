@@ -11,7 +11,7 @@ import lombok.*;
 public class Archive {
     //@Id和@GeneratedValue用来标识User对应对应数据库表中的主键
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    //@GeneratedValue(strategy = GenerationType.AUTO)
     private Integer code;
     private String name;
     private Integer parent_code;

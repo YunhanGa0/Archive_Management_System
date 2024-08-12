@@ -2,6 +2,7 @@ package com.example.Project2.controller;
 
 import com.example.Project2.bean.Archive;
 import com.example.Project2.dao.ArchiveRepository;
+import com.example.Project2.dao.BatchRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -27,11 +28,11 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class ExcelDatabase {
 
-    private ArchiveRepository repository;
+    private final BatchRepository batchRepository;
 
     @Autowired
-    public ExcelDatabase(ArchiveRepository repository) {
-        this.repository = repository;
+    public ExcelDatabase(BatchRepository batchRepository) {
+        this.batchRepository = batchRepository;
     }
 
     public void readDB() throws Exception { // 读取数据库内容输出Excel
@@ -73,7 +74,7 @@ public class ExcelDatabase {
         System.out.println("exceldatabase.xlsx written successfully");
     }
 
-    public void writeDB() throws IOException { // 读取Excel内容写入数据库
+    public void writeDB() throws IOException {
         FileSystemView fsv = FileSystemView.getFileSystemView();
         String desktop = fsv.getHomeDirectory().getPath();
         String filePath = desktop + "/archives1.xlsx";
@@ -85,25 +86,31 @@ public class ExcelDatabase {
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rows = sheet.iterator();
 
+        List<Archive> archiveList = new ArrayList<>();
+
         while (rows.hasNext()) {
             Row currentRow = rows.next();
             if (currentRow.getRowNum() == 0) {
                 continue; // Skip header row
             }
 
-            Archive archiveManagement = new Archive();
-            archiveManagement.setName(currentRow.getCell(0).getStringCellValue());
-            archiveManagement.setCode((int) currentRow.getCell(1).getNumericCellValue());
+            Archive archive = new Archive();
+            archive.setName(currentRow.getCell(0).getStringCellValue());
+            archive.setCode((int) currentRow.getCell(1).getNumericCellValue());
             if (currentRow.getCell(2) != null) {
-                archiveManagement.setParent_code((int) currentRow.getCell(2).getNumericCellValue());
+                archive.setParent_code((int) currentRow.getCell(2).getNumericCellValue());
             } else {
-                archiveManagement.setParent_code(null);
+                archive.setParent_code(null);
             }
 
-            repository.save(archiveManagement);
+            archiveList.add(archive);
         }
 
+        // 使用批处理保存数据
+        batchRepository.batchInsert(archiveList);
+
         workbook.close();
+        fis.close();
         System.out.println("Excel file imported successfully");
     }
 }

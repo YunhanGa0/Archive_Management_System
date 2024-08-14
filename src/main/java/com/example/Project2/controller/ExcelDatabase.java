@@ -7,6 +7,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -30,9 +31,12 @@ public class ExcelDatabase {
 
     private final BatchRepository batchRepository;
 
+    private final RabbitTemplate rabbitTemplate;
+
     @Autowired
-    public ExcelDatabase(BatchRepository batchRepository) {
+    public ExcelDatabase(BatchRepository batchRepository, RabbitTemplate rabbitTemplate) {
         this.batchRepository = batchRepository;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public void readDB() throws Exception { // 读取数据库内容输出Excel
@@ -72,12 +76,15 @@ public class ExcelDatabase {
         workbook.write(out);
         out.close();
         System.out.println("exceldatabase.xlsx written successfully");
+
+        rabbitTemplate.convertAndSend("excelQueue", "readDB");
+        //System.out.println("Read DB task sent to queue");
     }
 
     public void writeDB() throws IOException {
         FileSystemView fsv = FileSystemView.getFileSystemView();
         String desktop = fsv.getHomeDirectory().getPath();
-        String filePath = desktop + "/archives1.xlsx";
+        String filePath = desktop + "/generated_data.xlsx";
 
         File file = new File(filePath);
         FileInputStream fis = new FileInputStream(file);
@@ -112,5 +119,8 @@ public class ExcelDatabase {
         workbook.close();
         fis.close();
         System.out.println("Excel file imported successfully");
+        rabbitTemplate.convertAndSend("excelQueue", "writeDB");
+        //
+        // System.out.println("Write DB task sent to queue");
     }
 }

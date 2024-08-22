@@ -32,14 +32,16 @@ public class ExcelDatabase {
     private final BatchRepository batchRepository;
 
     private final RabbitTemplate rabbitTemplate;
+    private final SseController sseController;
 
     @Autowired
-    public ExcelDatabase(BatchRepository batchRepository, RabbitTemplate rabbitTemplate) {
+    public ExcelDatabase(BatchRepository batchRepository, RabbitTemplate rabbitTemplate, SseController sseController) {
         this.batchRepository = batchRepository;
         this.rabbitTemplate = rabbitTemplate;
+        this.sseController = sseController;
     }
 
-    public void readDB() throws Exception { // 读取数据库内容输出Excel
+    public void readDB(String clientId) throws Exception { // 读取数据库内容输出Excel
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection connect = DriverManager.getConnection(
                 "jdbc:mysql://172.25.67.174:3306/gyh_test?useUnicode=true&characterEncoding=UTF-8",
@@ -78,10 +80,12 @@ public class ExcelDatabase {
         System.out.println("exceldatabase.xlsx written successfully");
 
         rabbitTemplate.convertAndSend("excelQueue", "readDB");
-        //System.out.println("Read DB task sent to queue");
+        System.out.println(clientId);
+        // 任务完成后通知客户端
+        sseController.sendUpdate(clientId, "Import Task Completed");
     }
 
-    public void writeDB() throws IOException {
+    public void writeDB(String clientId) throws IOException {
         FileSystemView fsv = FileSystemView.getFileSystemView();
         String desktop = fsv.getHomeDirectory().getPath();
         String filePath = desktop + "/generated_data.xlsx";
@@ -120,7 +124,8 @@ public class ExcelDatabase {
         fis.close();
         System.out.println("Excel file imported successfully");
         rabbitTemplate.convertAndSend("excelQueue", "writeDB");
-        //
-        // System.out.println("Write DB task sent to queue");
+
+        // 任务完成后通知客户端
+        sseController.sendUpdate(clientId, "Export Task Completed");
     }
 }

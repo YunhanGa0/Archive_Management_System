@@ -28,9 +28,9 @@ public class RabbitConfig {
     public RabbitTemplate.ConfirmCallback confirmCallback() {
         return (correlationData, ack, cause) -> {
             if (ack) {
-                System.out.println("Message sent successfully!");
+                System.out.println("Rabbitmq: Message sent successfully!");
             } else {
-                System.out.println("Message sending failed: " + cause);
+                System.out.println("Rabbitmq: Message sending failed: " + cause);
             }
         };
     }
@@ -44,7 +44,7 @@ public class RabbitConfig {
             try {
                 // 处理消息
                 String body = new String(message.getBody());
-                System.out.println("Received: " + body);
+                System.out.println("Rabbitmq: Received: " + body);
 
                 // 手动确认消息
                 channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);

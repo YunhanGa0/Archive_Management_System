@@ -3,22 +3,28 @@ package com.example.Project2.controller;
 import com.example.Project2.dao.BatchRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ExcelController {
 
     private final ExcelDatabase excelDatabase;
+    private final SseController sseController;
 
     @Autowired
-    public ExcelController(ExcelDatabase excelDatabase) {
+    public ExcelController(ExcelDatabase excelDatabase, SseController sseController) {
         this.excelDatabase = excelDatabase;
+        this.sseController = sseController;
     }
 
     @GetMapping("/readDb")
     public String readDatabaseToExcel() {
         try {
-            excelDatabase.readDB();
+            String clientId = sseController.generateClientId();
+            //System.out.println(clientId);
+            excelDatabase.readDB(clientId);
+
             return "数据库成功导出到 Excel";
         } catch (Exception e) {
             e.printStackTrace();
@@ -27,9 +33,9 @@ public class ExcelController {
     }
 
     @GetMapping("/writeDb")
-    public String writeExcelToDatabase() {
+    public String writeExcelToDatabase(String clientId) {
         try {
-            excelDatabase.writeDB();
+            excelDatabase.writeDB(clientId);
             return "Excel 成功导入到数据库";
         } catch (Exception e) {
             e.printStackTrace();
